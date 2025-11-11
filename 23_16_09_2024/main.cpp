@@ -716,7 +716,7 @@ INHERITANCE
 				Der d2(d1);
 			}
 
-		ÖRNEK:ayný kural move ctor içinde geçerli move ctoru kendimiz yazarsak taban sýnýfýn default ctorunun deðil copy ctorunun çaðýrýlmasýndan sorumluyuz
+		ÖRNEK:ayný kural move ctor içinde geçerli move ctoru kendimiz yazarsak taban sýnýfýn default ctorunun deðil move ctorunun çaðýrýlmasýndan sorumluyuz
 		eðer çaðrý yapmazsak derleyici default ctora çaðrý yapacak olan kodu üretecek
 
 			class Base {

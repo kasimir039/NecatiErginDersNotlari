@@ -108,8 +108,8 @@ EXCEPTION HANDLING
 			
 				exceptionu throw etmek ne demek?
 					exception fýrlatmak run time'da  bir hata durumu oluþtuðunda, bu hatayý bildirmek ve farklý bir yere genelde üst fonksiyonlara iletmek için kullanýlýr
-					hcall chaindeki bir fonksion error durumuna düþtüðü zaman error'a iþarete eden bir hata nesnesi oluþturuyor büyük çoðunlukla bir polimorfik sýnýfn nesnesi ama olmak zorunda deðil
-					yukarýdaki kodlara gönderiliyor yukarýdaki kodlardan içinde try bloðu olan hatayý yakalýyor hatayý yakalarsa porgramýn akýþý expdetionu throw eden koddan exceptionu catch eden koda 
+					call chaindeki bir fonksiyon error durumuna düþtüðü zaman error'a iþaret eden bir hata nesnesi oluþturuyor büyük çoðunlukla bir polimorfik sýnýfn nesnesi ama olmak zorunda deðil
+					yukarýdaki kodlara gönderiliyor yukarýdaki kodlardan içinde try bloðu olan hatayý yakalýyor hatayý yakalarsa programýn akýþý expcetionu throw eden koddan exceptionu catch eden koda 
 					ilgili catch bloðuna çekiliyor
 
 					void foo()

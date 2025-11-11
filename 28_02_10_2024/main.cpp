@@ -155,8 +155,8 @@ exception handligten devam ediyoruz
 					try {
 						foo(23);
 					}
-					catch (const std::exception& ex)
-					{
+					catch (const st::exception& ex)
+					{d
 						std::cout << "exception caught in bar()\n";
 						throw ex; // not re-throw // sadece throw ifadesi olsaydý re-throw etmiþ olacaktýk ve out_of_range olan catch bloðu çalýþacaktý
 
@@ -239,7 +239,7 @@ exception handligten devam ediyoruz
 		derleyicide bir fonksiyonun exception throw etmediðini gördüðünde bazý yerlerde daha iyi optimizasyon yada kod seçme þansýna sahip
 		
 		STRONG GURANTEE(commit or rollback)
-				fonksiyon diyor ki ya ben iþimi yapacaðýmýz yada benden bir exception gittiðinde ben iþimin yapýlmasýndan önceki state'ini koruyacaðým
+				fonksiyon diyor ki ya ben iþimi yapacaðým ya da benden bir exception gittiðinde ben iþimin yapýlmasýndan önceki state'ini koruyacaðým
 				yani ya iþin tamamýný yapar yada iþi yapmadan önceki hale geri döner
 			
 			BASIC GURANTEE
