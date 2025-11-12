@@ -19,8 +19,8 @@ C+17 ile eklenen önemli 2 member function daha var
 								   pairi oluşturuluyordu ve key value pairi oluşturuken value'nun default ctoruna çağrı yapıyor 
 		
 		2.problem
-			subscript operatör fonksiyonunu kullanıyoru ama geri dönüş değei var olan ya da oluşturulan pair'in value değerine referans subscript operatör fonksiyonu ekleme yapılıp 
-			yapılmadığını söylemiyor yani  mymap[key] = value gibi bir kod yazdıktan sonra map'te key var da onun value değerini mi değiştirdik yoksa key value değerini insert mü
+			subscript operatör fonksiyonunu kullanıyoruz ama geri dönüş değeri var olan ya da oluşturulan pair'in value değerine referans subscript operatör fonksiyonu ekleme yapılıp 
+			yapılmadığını söylemiyor yani  mymap[key] = value gibi bir kod yazdıktan sonra map'te key var da onun value değerini mi değiştirdik yoksa key value değerini insert 
 			ettiğimizi fonksiyonun geri dönüş değerinden bunu anlayamıyoruz ama insert_or_assign bu 2 problemi de çözüyor
 			
 			1)eklemenin yapılıp yapılmadığının bilgisi
@@ -30,20 +30,26 @@ C+17 ile eklenen önemli 2 member function daha var
 			int main()
 			{
 				const auto& print_pair = [](const auto& p)
-				{
+					{
 						std::cout << "(" << p.first << ", " << p.second << ")";
-				};
+					};
 
 				const auto print_result = [&](const auto& p)
-				{
+					{
 						std::cout << (p.second ? "inserted: " : "not inserted:");
 						print_pair(*p.first);
-				};
-				 
+						std::cout << '\n';
+					};
+
 				std::map<int, std::string> mymap;
 
 				auto ibp = mymap.insert_or_assign(12, "mustafa");
+				print_result(ibp);
 
+				ibp = mymap.insert_or_assign(45, "ali");
+				print_result(ibp);
+
+				ibp = mymap.insert_or_assign(12, "selim");
 				print_result(ibp);
 			}
 
@@ -51,11 +57,11 @@ C+17 ile eklenen önemli 2 member function daha var
 		
 		emplace ve insert fonksiyonun şöyle bir problemi var
 
-			insert fonksiyonu insert işleminin yapılabilmesi için bir pair'i oluşturuyor ama eğer set'te ve map'te eklenecek anahtar varsa ekleme işlemi yapılmıyor
-			yani biz map için insert fonksiyonunu çağıtdığımız zaman pair'i zaten oluşturmuş oluyoruz artık pair'i oluşturmamak gibi bir ihtimal söz konusu değil oysa try_emplace
+			insert fonksiyonu insert işleminin yapılabilmesi için bir pair'i oluşturuyor ama eğer set'de ve map'de eklenecek anahtar varsa ekleme işlemi yapılmıyor
+			yani biz map için insert fonksiyonunu çağırdığımız zaman pair'i zaten oluşturmuş oluyoruz artık pair'i oluşturmamak gibi bir ihtimal söz konusu değil oysa try_emplace
 			önce anahtarın var olup olmadığını kontrol ediyor anahtar varsa pair'i oluşturmuyor anahtar yoksa pair'i oluşturuyor yani insert fonksiyonundan farkı eğer anahtar mevcutsa
-			pair'i oluşturmaması pair'i oluşturmasının bir dezavantajı daha var eğer taşıma semantiğine açık tür kullanıyorsak pair'i oluştururken kaynak çalmış oluşucaz
-			yani bir nesnenin kaynağını çalıyoruz ama ekleme işlemi yapılmıyor 
+			pair'i oluşturmaması ama pair'i oluşturmasının bir dezavantajı daha var eğer taşıma semantiğine açık tür kullanıyorsak pair'i oluştururken kaynak çalmış oluşucaz
+			yani bir nesnenin kaynağını çalıyoruz ama ekleme işlemi yapılmıyor try_emplace fonksiyonu çoğu zaman insert fonksiyonu ve emplace fonksiyonuna daha iyi bir alternatif
 
 			ÖRNEK:
 
@@ -70,17 +76,26 @@ C+17 ile eklenen önemli 2 member function daha var
 					};
 
 					// mymap.try_emplace(56, "selami"); // 56 olmadığı için pair'i oluşturucak
+
+					pairi oluşturup oluşturmamasının önemli nedeni
+
+						std::string str{ "mustafa" };
+						mymap.try_emplace(56,std::move(str));
+
+						std::cout<<str.length()<<'\n'; // str'in içeriği bozulmuş olabilir çünkü insert fonksiyonu çağrıldığında pair oluşturuluyor ve str'in kaynağı çalınıyor ama ekleme işlemi yapılmıyorsa str'in içeriği bozulmuş oluyor
+													  oysa try_emplace fonksiyonu önce anahtarın var olup olmadığını kontrol ediyor anahtar yoksa pair'i oluşturuyor ve ekleme işlemini yapıyor anahtar varsa pair'i oluşturmuyor
+													  dolayısıyla str'in içeriği bozulmamış oluyor
+
+					auto [iter,inserted] = mymap.try_emplace(12,str);
 					
-						auto [iter,inserted] = mymap.try_emplace(12,str);
-						
-						if(inserted)
-						{
-							std::cout << "Yeni eleman eklendi: " << iter->first << " -> " << iter->second << '\n';
-						}
-						else
-						{
-							std::cout << "Anahtar zaten var: " << iter->first << " -> " << iter->second << '\n';
-						}
+					if(inserted)
+					{
+						std::cout << "Yeni eleman eklendi: " << iter->first << " -> " << iter->second << '\n';
+					}
+					else
+					{
+						std::cout << "Anahtar zaten var: " << iter->first << " -> " << iter->second << '\n';
+					}
 				}			
 
 		ÖRNEK: map kullananlarda üretimde çok tipik bi durum oluşuyor subscript operatör fonksiyonu verdiğimiz anahtarın value değerine eriştiriyor bazi maplerimiz const 
@@ -98,24 +113,22 @@ C+17 ile eklenen önemli 2 member function daha var
 UNORDERED ASSOCIATIVE CONTAINERS
 
 	diğer programlama dillerinde hash_set ve hash_map olarak geçiyor burda amaç constant time'da O(1) key ve value değerine erişmek aradaki fark set'te bu işlem O(log n) karşmaşıklığında
-	unordered_set ve unordered_map'te ise ortalama olarak constant time'da
+	unordered_set ve unordered_map'te ise ortalama olarak constant time'da anahtara erişebiliyoruz
 
-	
 	ÖRNEK: key değerimiz bir string olsun ve bu anahtarı kullanarak constant time'da anahtarın var olup olmadığını ya da anahtara karşılık gelen value değerine karşılık gelen value değerini bulmaya çalışalım 
 		  
-		  şöyle olsaydı bir string'i bir indexe dönüştürseydik ve bu indeksi de vektörel bir veri yapısında indeks olarak kullansaydık vec[index] ve vectör'ün bu indeksteki öğesine erişseydik 
-		  set ise ya o string'i buluyoruz ya da bulamıyoruz map ise string'e karşılık gelen value değerini buluyoruz burada şöyle bir süreç gerekiyoe vektörel veri yapısında indeksi kullanarak
-		  anahtara erişmemiz için anahtarın indekse dönüştürülmesi gerekiyor veri yapısında tutulan öğeyi indekse dönüştürme işlemine HASHING deniliyor bu işi yapan fonksiyona da HASHER/HASH FUNCTION deniliyor 
-		  yani öyle bir hash function olacak ki anahtarı alacak o anahtarı işaretsiz tam sayıya dönüştürecek ve biz onu doğrudan ya da dolaylı olarak indeks olarak kullanacağız 
-
+		  şöyle olsaydı bir string'i bir indexe dönüştürseydik ve bu indeksi de vektörel bir veri yapısında indeks olarak kullansaydık vec[index] ve vectör'ün(vektör olmak zorunda değil başka bir veri yapısı da olabilir) 
+		  bu indeksteki öğesine erişseydik set ise ya o string'i buluyoruz ya da bulamıyoruz map ise string'e karşılık gelen value değerini buluyoruz burada şöyle bir süreç gerekiyoe vektörel veri yapısında indeksi kullanarak
+		  anahtara erişmemiz için anahtarın indekse dönüştürülmesi gerekiyor veri yapısında tutulan öğeyi indekse dönüştürme işlemine HASHING deniliyor bu işi yapan fonksiyona da HASHER ya da HASH FUNCTION deniliyor 
+		  yani öyle bir hash function olacak ki anahtarı alacak o anahtarı işaretsiz tam sayıya dönüştürecek ve biz onu doğrudan ya da dolaylı olarak indeks olarak kullanacağız
+		  
 		  bu veri yapısının doğru çalışması için problemlerin çözülmesi gerekiyor
 			1)hashing tarafı
-				veri yapısına ekleme,arama,silme gibi işlemlerde sürekli kullanıldığı için hash fonksiyonunun hızlı çalışması gerekicek
+				veri yapısına ekleme,arama,silme gibi işlemlerde sürekli kullanıldığı için hash fonksiyonunun hızlı çalışması gerekicek veri yapısı kullanıldığı sürece key'leri indekse dönüştüreceğiz
 			
 			2)aynı anahtarı aynı tam sayıya dönüştürmesi gerekiyor
-				
-				necati ergin 872341 gibi bir tam sayı değeri verirse ama daha sonra aynı hash fonksiyonuyla yine hash ettiğimizde aynı tam sayıyı vermezse o hasher kullanılabilir durumda değil
-				yani atnı anahtarı aynı değere hash etmesi gerekiyor
+				necati ergin 872341 gibi bir tam sayı değeri verirse ama daha sonra necati ergini aynı hash fonksiyonuyla yine hash ettiğimizde aynı tam sayıyı vermezse o hasher kullanılabilir durumda değil
+				yani aynı anahtarı aynı değere hash etmesi gerekiyor
 
 			3)hash collision
 
@@ -135,8 +148,8 @@ UNORDERED ASSOCIATIVE CONTAINERS
 				unordered_map ve unordered_multimap grubunda key ve value pairi tutuluyor
 
 				GÖRSELEİ İNCELEYİN
-					örneği vectör'ün 1.indeksi bir bucket yani arka planda bir bağlı liste bağlı listede 3 tane öğe olması demek set'De tutulan 3 farklı key'in aynı indsekse hash edilmesi demek
-					ve alttaki bazı bucketlar'da boş
+					örneği vectör'ün 1.indeksi bir bucket yani arka planda bir bağlı liste bağlı listede 3 tane öğe olması demek set'de tutulan 3 farklı key'in aynı indsekse hash edilmesi demek
+					ve alttaki bazı bucketlar'da
 
 					unordered_set yada unordered_map'i construct ederken bucket sayısının ne olması gerektiğini
 						a)kendimiz belirleyebiliyoruz
@@ -146,8 +159,8 @@ UNORDERED ASSOCIATIVE CONTAINERS
 					bağlı listenin iteratörleri forward iteratör'de olabilir bi-directional iteratör'de olabilir
 
 					hasher fonksiyonumuzun yapacağı bir key'i bir indekse dönüştürücek ama bir şeye dikkat bizim hasher'ımız aslında anahtarı diyelimki 4 bytelık işaretsiz tam sayıya hash ediyor
-					ama diyelimki indeks 256'ya kadar olsun onu yapan set'in kendi kodu yani hasher gerçek indeksi vermiyor bir hash fonksiyonu
-					anahtarı 0 ile işaretsiz diyelim ki 4 bytelık tm sayı türünün en büyük değerini hash ediyorlar
+					ama diyelim ki indeks 256'ya kadar olsun onu yapan set'in kendi kodu yani hasher gerçek indeksi vermiyor bir hash fonksiyonu
+					anahtarı 0 ile işaretsiz diyelim ki 4 bytelık tam sayı türünün en büyük değerini hash ediyorlar
 
 					standart kütüphane utility başlık dosyasında kendi türleri,aritmatik türler, pointer türleri için bir hash template'i veriyor ve eğer biz standart kütüphanenin hash template'ini kullanırsak
 					standart kütüphaneye ilişkin türler için bizim hash function oluşturmamıza gerek kalmıyor 
@@ -156,21 +169,20 @@ UNORDERED ASSOCIATIVE CONTAINERS
 
 				int main()
 				{
-					std::hash<int>::operator() // hashing'i yapıcak fonksiyon bu dolayısıyla hash'in int açılımının function call operator fonksiyonunu çağırırsak 
-												  int türden bir değer verdiğimizde geri dönüş değeri olarak size_t veriyor
+					std::cout << std::hash<int>{}(567)<< '\n';
 
-					std::cout<<std::hash<int>{}(567)<<'\n';
 					std::cout<<std::hash<int>{}(568);
 				}
 
 			ÖRNEK:
+
 				int main()
 				{
 					std::hash<int> hasher;
 
 					for (int i = 5678; i < 5700; ++i)
 					{
-						std::cout << i << " " << hasher(i) << '\n';
+						std::cout << i << " " << hasher(i) << '\n'; // hepsi birbirinden farklı değerler üretiyor 
 					}
 
 				}
@@ -195,14 +207,14 @@ UNORDERED ASSOCIATIVE CONTAINERS
 					std::hash<std::string> hasher{};
 
 					std::vector<std::string> names = {
-						"Ahmet", "Mehmet", "Ayşe", "Fatma", "Ali",
+						"Ahmet", "Mehmet", "Ahmet", "Fatma", "Ali", 
 						"Veli", "Zeynep", "Kerim", "Nihal", "Sadullah"
 					};
 
 					for (const auto& name : names)
 					{
 						size_t hashValue = hasher(name);
-						std::cout << name << " -> " << hashValue << '\n';
+						std::cout << name << " -> " << hashValue << '\n'; // Ahmet 2 kere olduğu için aynı key için aynı değere hash ediliyor
 					}
 
 				 }
@@ -219,8 +231,10 @@ UNORDERED ASSOCIATIVE CONTAINERS
 			4. parametre: Allocator -> std::allocator<int>
 		}
 
-		1)kendi türümüzü oluşturmak istersek
+		eğer unordered containerda tutacağımız tür örneğin Date türü ise unordered_set<Date> x; dersek sentaks hatası alırız çünkü bu açılım demek std::hash<Date> açılımı demek bunun geçerli olması için
+		hash'in Date specialization'ının olması gerekiyor
 
+		ÖRNEK: kendi türümüzü oluşturmak istersek
 			template <>
 			struct std::hash<Date> // Date sınıfı olduğunu varsayıp bu kodu yazıyoruz
 			{
@@ -231,7 +245,7 @@ UNORDERED ASSOCIATIVE CONTAINERS
 				}
 			};
 		
-		2)kendi hasher'ımızı template paramteresi yapabiliriz
+		ÖRNEK:kendi hasher'ımızı template parametresi yapabiliriz
 		
 			struct DateHasher
 			{
@@ -247,10 +261,9 @@ UNORDERED ASSOCIATIVE CONTAINERS
 				std::unordered_set<Date,DateHasher> x;
 			}
 
-		3)sınıf tanımlamadan bir fonksiyon oluşturmak template parametresi olarak fonksiyonun adresini kullanmak ve ctora fonksiyonun adresini argüman olarak geçmek
+		sınıf tanımlamadan bir fonksiyon oluşturmak template parametresi olarak fonksiyonun adresini kullanmak ve ctora fonksiyonun adresini argüman olarak geçmek
 
-			
-		4)lambda ifadeleri
+		ÖRNEK: lambda ifadeleri
 			
 			int main()
 			{
@@ -260,10 +273,10 @@ UNORDERED ASSOCIATIVE CONTAINERS
 					return hasher(d.month()) + hasher(d.month_day()) + hasher(d.year));
 				};
 
-				std::unordered_set<Date,decltype(fhash)> x;
+				std::unordered_set<Date,decltype(fhash)> x; 
 			}
-
-	bucket sayısını öğe sayısıyal oranlarsak öğe sayısına göre bucket sayısı ne kadar fazla olursa collision az olacak dolayısıyla bucket sayısını belirlememiz için ctora bunu argüman olarak geçebiliyoruz
+	
+	bucket sayısını öğe sayısıyla oranlarsak öğe sayısına göre bucket sayısı ne kadar fazla olursa collision az olacak dolayısıyla bucket sayısını belirlememiz için ctora bunu argüman olarak geçebiliyoruz
 	eğer ctora argüman olarak geçmezsek kendi belirlediği değer kullanılıyor
 
 		ÖRNEK:
@@ -275,32 +288,32 @@ UNORDERED ASSOCIATIVE CONTAINERS
 				std::cout<<"bucket count = " << myset.buket_count() << '\n';
 			}
 
-		ÖRNEK:
-
-			int main()
-			{
-				std::unordered_set<std::string> myset;
-
-				int cnt = myset.bucket_count();
-
-				for (int i = 0; i < 1000; ++i)
-				{
-					std::string str = "ahmet" + std::to_string(i);
-
-					myset.insert(str);
-
-					if (myset.bucket_count() > cnt)
-					{
-						std::cout << "new bucket count is : " << myset.bucket_count() << " size is " << myset.size() << '\n';
-						cnt = myset.bucket_count();
-					}
-				}
-
-			}
-
 			SORU:bucket count dinamik olarak artar mı? EVET
 				belirli bir eleman sayısına geldiğinde bucket sayısının arttırılması için veri yapısı kendini yeniden organize ediyor bu işleme REHASH deniliyor
 				yani bütün anahtarlar yeni bucket sayısına göre tekrar hash ediliyor bunun ciddi bir maliyeti var
+
+				ÖRNEK:
+
+					int main()
+					{
+						std::unordered_set<std::string> myset;
+
+						int cnt = myset.bucket_count();
+
+						for (int i = 0; i < 1000; ++i)
+						{
+							std::string str = "ahmet" + std::to_string(i);
+
+							myset.insert(str);
+
+							if (myset.bucket_count() > cnt)
+							{
+								std::cout << "new bucket count is : " << myset.bucket_count() << " size is " << myset.size() << '\n';
+								cnt = myset.bucket_count();
+							}
+						}
+
+					}
 
 			SORU:REHASH ne zaman yapılıyor?
 
@@ -330,9 +343,9 @@ UNORDERED ASSOCIATIVE CONTAINERS
 							std::cout << "size = " << sz << '\n';
 							std::cout << "bucket count = " << bcount << '\n';
 							std::cout << static_cast<float>(sz) / bcount << '\n';
-							std::cout << myset.load_factor() << '\n'; // static_cast<float>(sz) / bcount ile aynı değeri döndürür
-							std::cout << "max load factor = " << myset.max_load_factor() << '\n'; // max_load_factor'ün 1 olması şu demek load_factor max_load_factor değerine gelince REHASH yapılacak ama max_load_factor'ü 
-																									 kendimizde belirleyebiliriz hem get hem set fonksiyonu
+							std::cout << myset.load_factor() << '\n'; // static_cast<float>(sz) / bcount ile aynı değeri döndürür yani load_factor fonksiyonu bize bucket başına düşen ortalama öğe sayısını veriyor
+							std::cout << "max load factor = " << myset.max_load_factor() << '\n'; // max_load_factor'ün 1 olması şu demek load_factor değeri max_load_factor değerine gelince REHASH yapılacak max_load_factor'ü 
+																									 kendimizde belirleyebiliriz max_load_factor hem get hemde set fonksiyonu var
 							myset.max_load_factor(0.75);
 							std::cout << "max load factor = " << myset.max_load_factor() << '\n';
 						}
@@ -395,7 +408,7 @@ UNORDERED ASSOCIATIVE CONTAINERS
 		
 		set map grubunda örneğin bir anahtarın var olup olmadığını tespit etmek için equivalence kullanıyorduk fakat unordered containerrlarda durum böyle değil bu bizim aradağımız değer mi? 
 		sorgulaması == karşılaştırmaasıyla yapılıyor == karşlıştırmasını sağlayan function object type equal_to'nun key açılımını alıo-yor
-		unordered_set'de tutacağaımız öğeler için insert erase gibi işlemler yapacaksak o türden değerlerin == operatörüyle karşılaştırılabilmesi gerekiyor 
+		unordered_set'de tutacağımız öğeler için insert erase gibi işlemler yapacaksak o türden değerlerin == operatörüyle karşılaştırılabilmesi gerekiyor 
 		
 			class Myclass
 			{
@@ -464,12 +477,15 @@ UNORDERED ASSOCIATIVE CONTAINERS
 			4)fonksiyonlara 2 argüman olarak geçmek yerine tek argüman geçiyoruz
 
 			5)C ve C++ dillerinde bir fonksiyonun geri dönüş değeri türünün kendisi direkt olarak bir dizi türü olamaz(dizinin adresi olabilir) 
-			  fonksiyon parametresi direkt olarak bir dizi türü olamaz eğer istenirse 
-				return type std::array
-				parameter type std::array olabilir
+			  
+			  fonksiyon parametresi direkt olarak bir dizi türü olamaz eğer istenirse
+				geri dönüş değeri std::array olabilir
+				parametresi std::array olabilir
 
 			6)C de ve C++ dilinde bir dizinin ismini kullandığmızda array decay gerçekleşiyor C için bir çok yerde bilerek ve isteyerek kullanıyoruz
 			  ama C++ için bir çok bağlamda aşırı riskli std::array'de array decay gerçekleşmiyor
+
+			7)C dizisi indeksin geçersiz olması durumunda exception throw etmez ama std::array indeksin geçersiz olması durumunda exception throw ediyor
 
 		ÖRNEK:
 
@@ -500,6 +516,109 @@ UNORDERED ASSOCIATIVE CONTAINERS
 
 			}
 
-		2.14
+			struct Nec
+			{
+				int x,y;
+			};
 
+			int main()
+			{
+				Nec mynec = {23,56}; // aggregate initialization
+			}
+
+		açısal parantezi hiç koymayıp ilk değer verirsek burada CTAD ile template parametreleri için çıkarım yapılıyor
+
+			int main()
+			{
+				std::array x {1,4,5,6,9}; 
+			}
+
+			yani 2 seçeneğimiz var
+
+				1)template argümanlarını kendimiz belirtiriz
+
+					std::array<int,5> x {1,4,5,6,9};
+
+				2)CTAD ile çıkarımı yapılmasını sağlayacağız 
+					std::array x {1,4,5,6,9}; 
+
+		 ÖRNEK: array decay olmaması
+			
+			int main()
+			{
+				std::array<int,5> x{};
+				int* ptr = x; // sentaks hatası çünkü array decay yok
+			}
+		
+		ÖRNEK: bir fonksiyonun geri dönüş değeri bir dizi olamaz ve diziler fonksiyona call by value olarak geçilemezler ama std::array olabilir
+			
+			std::array<int,3> foo(std::array<int,4> arr)
+
+		ÖRNEK:array'in array açılımları olabilir
+			
+			std::array<std::array<int,5>, 10> x; // 2 boyutlu her elemanı 5 elemanlı bir dizi olan 10 elemanlı dizi
+
+		1. Eleman Erişimi
+
+			at(n)`: Belirtilen indeksteki elemana güvenli erişim sağlar (Sınır kontrolü yapar ve hata fırlatır).
+			operator[](n)`: Belirtilen indeksteki elemana hızlı erişim sağlar (Sınır kontrolü yapmaz).
+			front()`: Dizinin ilk elemanına referans döndürür (indeks 0).
+			back()`: Dizinin son elemanına referans döndürür (indeks N-1).
+			data()`: Dizinin ham belleğinin başlangıcına bir işaretçi (`T*`) döndürür.
+
+		2. Kapasite
+
+			empty()`: Dizinin boş olup olmadığını kontrol eder (Sadece $N=0$ ise `true`).
+			size()`: Dizideki eleman sayısını (`N`) döndürür. (**`constexpr`**)
+			max_size()`: `size()` ile aynı değeri döndürür.
+
+		3. Iteratörler
+
+			begin()`: İlk elemana işaret eden ileri iteratör.
+			end()`: Son elemandan bir sonraki konuma işaret eden ileri iteratör.
+			rbegin()`: Son elemana işaret eden ters iteratör.
+			rend()`: İlk elemandan bir önceki konuma işaret eden ters iteratör.
+			cbegin()`, `cend()`, `crbegin()`, `crend()`: Aynı iteratörlerin `const` (salt okunur) versiyonları.
+
+		4. İşlemler
+
+			fill(value)`: Dizideki tüm elemanları tek bir değerle (`value`) doldurur/başlatır.
+			swap(other)`: İki `std::array` nesnesinin içeriğini hızlı bir şekilde takas eder.
+
+		ÖRNEK:
+
+			std::array<int,3> foo(int a, int b, int c)
+			{
+				return {a,b,c};
+			}
+
+			int main()
+			{
+				auto [a,b,c] = foo(3,5,8);
+			}
+
+		ÖRNEK:
+
+			template <typename T, std::size_t N>
+			std::ostream& operator<<(std::ostream& os, const std::array<T, N>& ar)
+			{
+				os << "[";
+				for (size_t i{}; i < N - 1; ++i)
+				{
+					os << ar[i] << ", ";
+				}
+
+				if constexpr (N == 0)
+					return os << "]";
+				else
+					return os << ar.back() << "]";
+			}
+
+			int main()
+			{
+				std::array<int, 5> a1{ 4,6,8,2,2 };
+				std::array a2 = { "can","eda","gul","tan","ata" };
+
+				std::cout << a1 << '\n' << a2 << '\n';
+			}
 */
