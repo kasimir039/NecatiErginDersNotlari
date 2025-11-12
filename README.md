@@ -153,8 +153,8 @@ list, linked list, doubly linked list, forward list, associative containers, str
 [44:
 set, multiset, emplace, find, count, contains, erase, extract, copy, inserter, transparent function object, emplace_hint, merge, map, multimap, insert, emplace, make_pair](https://github.com/kasimir039/NecatiErginDersNotlari/tree/master/44_02_12_2024)
 
-45:
-try_emplace, insert_or_assign,  unordered associative containers, hash_set, hash_map,  bucket, bucket_count, load_factor, max_load_factor, std::array
+[45:
+try_emplace, insert_or_assign,  unordered associative containers, hash_set, hash_map,  bucket, bucket_count, load_factor, max_load_factor, std::array](https://github.com/kasimir039/NecatiErginDersNotlari/tree/master/45_04_12_2024)
 
 46:
 std::array, to_array, container adapters(stack, queue, priority_queue), data structure, ABT (Abstract Data Type), stack, push, top, pop, size, queue, priority_queue, tuple, get, tuple_element, tuple_element_t, tuple_size, tuple_size_v, creating custom structured binding example for tuple
